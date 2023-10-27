@@ -23,9 +23,9 @@ let getScore item =
   if Char.IsLower item then int item - 96
   else int item - 38
 
+let processRucksack = getRucksack >> getDupe >> getScore
+
 input
-|> Seq.map getRucksack
-|> Seq.map getDupe 
-|> Seq.map getScore
+|> Seq.map processRucksack
 |> Seq.sum
 |> printfn "%d"
