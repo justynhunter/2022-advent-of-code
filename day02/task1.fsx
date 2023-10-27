@@ -36,13 +36,6 @@ let scoreMatch (round: Round) =
 
   (int outcome) + (int round.Me)
 
-// let parseElements (list:List<string>) =
-//   let shape1 = convertToShape list[0]
-//   let shape2 = convertToShape list[1]
-//   match (shape1, shape2) with
-//   | (Some one, Some two) -> Some (Round(Them = one, Me = two))
-//   | _ -> None
-
 let parseLine (line:string) =
   let [| them; me |] = line.Split(" ")
 
