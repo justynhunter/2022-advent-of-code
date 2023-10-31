@@ -49,24 +49,6 @@ let parseInstructions (lines:List<string>) =
   |> List.skip 1
   |> List.map parseInstruction
 
-// let executeInstruction (stacks:List<List<char>>) instruction =
-//   let rec loop times stacks =
-//     if times = 0 then stacks // exit recursive stack
-//     else 
-//       let crate = 
-//         stacks 
-//         |> List.item instruction.From 
-//         |> Seq.last
-
-//       stacks 
-//       |> List.mapi (fun i e -> 
-//         if i = (instruction.To) then List.append stacks[instruction.To] [ crate ]
-//         elif i = (instruction.From) then List.take ((List.length stacks[instruction.From])-1) stacks[instruction.From]
-//         else e)
-//       |> loop (times-1)
-  
-//   loop instruction.Count stacks
-
 let executeInstruction (stacks:List<List<char>>) (instruction:Instruction) =
   let cratesToMove =
     stacks
