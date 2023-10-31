@@ -2,8 +2,6 @@ open System
 open System.IO
 open System.Text.RegularExpressions
 
-let input = File.ReadAllLines "./input.txt" |> Array.toList
-
 type Instruction = {
   From:int
   To:int
@@ -61,13 +59,20 @@ let executeInstruction (stacks:List<List<char>>) (instruction:Instruction) =
       |> List.skip instruction.Count
     | _ -> stacks[i])
 
-let stacks = input |> parseStacks
+let run =
+  let input = File.ReadAllLines "./input.txt" |> Array.toList
+  let stacks = input |> parseStacks
 
-input
-|> parseInstructions
-|> List.fold executeInstruction stacks
+  input
+  |> parseInstructions
+  |> List.fold executeInstruction stacks
+  
+
+run
 |> List.map (fun l ->
   l 
   |> List.head 
   |> printf "%c")
+|> ignore
 printfn ""
+1
