@@ -10,15 +10,6 @@ type Instruction = {
   Count:int
 }
 
-let parseStackRow (row:seq<char>) =
-  row
-  |> Seq.chunkBySize 4
-  |> Seq.map (function
-    | [| '['; crate; ']' |] -> Some crate
-    | [| '['; crate; ']'; ' ' |] -> Some crate
-    | _ -> None)
-  |> List.ofSeq
-
 let parseStacks (lines:List<string>) =
   let rows = 
     lines
@@ -26,28 +17,31 @@ let parseStacks (lines:List<string>) =
     |> List.rev
     |> List.skip 1
     |> List.rev
-    |> List.map parseStackRow
+    |> List.map (fun row -> 
+      row
+      |> Seq.chunkBySize 4
+      |> Seq.map (function
+      | [| '['; crate; ']' |] -> Some crate
+      | [| '['; crate; ']'; ' ' |] -> Some crate
+      | _ -> None)
+      |> List.ofSeq)
 
   [ for i in 0 .. (rows.[0] |> List.length) - 1 ->
       rows 
       |> List.map (fun row -> row.[i]) 
       |> List.choose id ]
 
-let buildInstruction (regexMatch:Match) =
-  { Count = regexMatch.Groups.[1].Value |> int
-    From = regexMatch.Groups.[2].Value |> int |> (fun x-> x - 1)
-    To = regexMatch.Groups.[3].Value |> int |> (fun x-> x - 1)  }
-
-let parseInstruction (line:string) =
-  line
-  |> Regex("move (\d+) from (\d) to (\d)").Match
-  |> buildInstruction
-
 let parseInstructions (lines:List<string>) =
   lines
   |> List.skipWhile ((<>) "")
   |> List.skip 1
-  |> List.map parseInstruction
+  |> List.map (fun line -> 
+    line
+    |> Regex("move (\d+) from (\d) to (\d)").Match
+    |> (fun rm -> 
+      { Count = rm.Groups.[1].Value |> int
+        From = (int rm.Groups.[2].Value) - 1
+        To = (int rm.Groups.[3].Value) - 1 }))
 
 let executeInstruction (stacks:List<List<char>>) (instruction:Instruction) =
   let cratesToMove =
@@ -59,8 +53,12 @@ let executeInstruction (stacks:List<List<char>>) (instruction:Instruction) =
   stacks
   |> List.mapi (fun i e ->
     match i with
-    | t when t = instruction.To -> List.append cratesToMove stacks[instruction.To]
-    | f when f = instruction.From -> stacks[instruction.From] |> List.skip instruction.Count
+    | t when t = instruction.To -> 
+      stacks[instruction.To]
+      |> List.append cratesToMove
+    | f when f = instruction.From -> 
+      stacks[instruction.From] 
+      |> List.skip instruction.Count
     | _ -> stacks[i])
 
 let stacks = input |> parseStacks
@@ -68,5 +66,8 @@ let stacks = input |> parseStacks
 input
 |> parseInstructions
 |> List.fold executeInstruction stacks
-|> List.map (fun l -> l |> List.head |> printf "%c")
+|> List.map (fun l ->
+  l 
+  |> List.head 
+  |> printf "%c")
 printfn ""
