@@ -25,6 +25,7 @@ let parseStacks (lines:List<string>) =
     |> List.takeWhile ((<>) "")
     |> List.rev
     |> List.skip 1
+    |> List.rev
     |> List.map parseStackRow
 
   [ for i in 0 .. (rows.[0] |> List.length) - 1 ->
@@ -48,28 +49,42 @@ let parseInstructions (lines:List<string>) =
   |> List.skip 1
   |> List.map parseInstruction
 
-let executeInstruction (stacks:List<List<char>>) instruction =
-  let rec loop times stacks =
-    if times = 0 then stacks // exit recursive stack
-    else 
-      let crate = 
-        stacks 
-        |> List.item instruction.From 
-        |> Seq.last
+// let executeInstruction (stacks:List<List<char>>) instruction =
+//   let rec loop times stacks =
+//     if times = 0 then stacks // exit recursive stack
+//     else 
+//       let crate = 
+//         stacks 
+//         |> List.item instruction.From 
+//         |> Seq.last
 
-      stacks 
-      |> List.mapi (fun i e -> 
-        if i = (instruction.To) then List.append stacks[instruction.To] [ crate ]
-        elif i = (instruction.From) then List.take ((List.length stacks[instruction.From])-1) stacks[instruction.From]
-        else e)
-      |> loop (times-1)
+//       stacks 
+//       |> List.mapi (fun i e -> 
+//         if i = (instruction.To) then List.append stacks[instruction.To] [ crate ]
+//         elif i = (instruction.From) then List.take ((List.length stacks[instruction.From])-1) stacks[instruction.From]
+//         else e)
+//       |> loop (times-1)
   
-  loop instruction.Count stacks
+//   loop instruction.Count stacks
+
+let executeInstruction (stacks:List<List<char>>) (instruction:Instruction) =
+  let cratesToMove =
+    stacks
+    |> List.item instruction.From
+    |> List.take instruction.Count
+    |> List.rev
+
+  stacks
+  |> List.mapi (fun i e ->
+    match i with
+    | t when t = instruction.To -> List.append cratesToMove stacks[instruction.To]
+    | f when f = instruction.From -> stacks[instruction.From] |> List.skip instruction.Count
+    | _ -> stacks[i])
 
 let stacks = input |> parseStacks
 
 input
 |> parseInstructions
 |> List.fold executeInstruction stacks
-|> List.map (fun l -> l |> List.last |> printf "%c")
+|> List.map (fun l -> l |> List.head |> printf "%c")
 printfn ""
